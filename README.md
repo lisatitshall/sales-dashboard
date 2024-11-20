@@ -49,10 +49,10 @@ A retailer of office supplies wants to get a better understanding of how their b
   - State is a text column. There are 49 distinct states and 1 value only appears once. This is almost all the US states.
   - Postal Code is a 5-letter text column with 631 distinct values
   - Region is a category column with 4 options: "West", "East", "Central" and "South"
-  - Product ID is a key column with 1862 distinct values
+  - Product ID is a key column with 1862 distinct values and 1830 unique values  (1850, 1834)
   - Category has 3 options: "Office Supplies", "Furniture" and "Technology"
   - Subcategory has 17 distinct values
-  - Product Name is similar to Product ID but records the name instead. It doesn't have the same distribution suggesting a few data errors
+  - Product Name is similar to Product ID but records the name instead. It doesn't have the same distribution suggesting data errors
   - Sales is a decimal column with min 0.44, average 229.85 and max 22638
   - Quantity is an integer column with min 1 and max 14
   - Discount is a decimal column recording the percentage discount applied on the sale. Most sales have 0 discount. The max is 0.8.
@@ -67,8 +67,37 @@ A retailer of office supplies wants to get a better understanding of how their b
   - Geography - Geography Key, Country, City, State, Postal Code, Region
   - Product - Product Key, Product ID, Category, Subcategory, Product Name
   - Ship Mode - Ship Mode Key, Ship Mode
-- Investigate the difference in distribution between Product ID and Product Name
+- In order to split the tables, duplicate the Sales table and take the following actions:
+  - Rename the new table
+  - Select the columns you need to keep and choose the "Remove Other Columns" option
+  - Remove duplicates from the new table checking the number is as expected
+  - Sort the table if needed
+  - Add an index to the new column starting from 1 
+  - Rename and reorder the new index column
+  - These steps will show on the right hand side of the Query Editor
+  - ![new table](https://github.com/user-attachments/assets/0c10b885-8b53-4742-a69e-7a785d33f87d)
+  - Back on the sales table, use the merge queries option 
+  ![merge tables](https://github.com/user-attachments/assets/46bd75b5-28f1-4eb8-aef5-12641cfa1222)
+  - Expand the joined table and only keep the key
+  - Untick the box to "Use original column name as prefix"
+  - Remove the columns that are now in a new table
+  - Repeat until all tables have been created
+- For the Geography table the expected number of deduped records was 631 because there were 631 unique postal codes. On investigation there was one postal code 92024 that appeared twice for two different cities. A Google search confirmed this wasn't a data error.
+- For the Product table we noted above the distribution of the Product ID and Product Name columns were different. An example is shown below where the same product ID has two different product names.
+  ![duplicate values](https://github.com/user-attachments/assets/af455d68-69c5-4461-9560-7b1f02e3165b)
+  - These are data errors likely caused by free text data entry
+  - Because we want unique Product ID's we'll group by the other three columns and take the max product name (see below)
+  ![group by](https://github.com/user-attachments/assets/9bc01e06-ef6a-4731-97d3-322ca113c96c)
+  - We now have 1862 distinct Product ID's as required
+  - We still have some duplicate product names (see below). These names should have been more descriptive to distinguish one product from another but we can't do much to change this.
+  ![duplicate product names](https://github.com/user-attachments/assets/50e7bff9-926a-478d-9227-9705414ee313)
+
+
+### Step 4: Model the data
+
+### Step 5: Explore the data
 - Investigate why some sales have negative or 0 profit
+- 
 # Screenshot of Report
 
 ![sales dashboard](https://github.com/user-attachments/assets/365a1fbe-3e5c-4a36-89cb-d8e3d5f7a226)
