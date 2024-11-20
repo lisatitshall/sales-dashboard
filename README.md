@@ -18,7 +18,7 @@ A retailer of office supplies wants to get a better understanding of how their b
 
 # Screenshot of Report
 
-![report_snapo]()
+![sales dashboard](https://github.com/user-attachments/assets/365a1fbe-3e5c-4a36-89cb-d8e3d5f7a226)
 
 # Insights
 
