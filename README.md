@@ -3,7 +3,7 @@
 
 ### Dashboard Link : 
 
-## Problem Statement
+## Summary of task
 
 A retailer of office supplies wants to get a better understanding of how their business is performing. They would like a dashboard which allows them to explore their sales by product type, customer and location to identify trends and possible growth areas.
 
@@ -15,6 +15,20 @@ A retailer of office supplies wants to get a better understanding of how their b
 - Step 4 : In the Model view, set up appropriate relationships between tables.
 - Step 5 : Create calculated columns and measures as needed.
 - Step 6 : In the Report view, add visualizations to summarize the company's sales data.
+
+More detail about the steps taken during this project can be found at the bottom of this document.
+
+# Screenshot of Report
+
+# Insights
+
+### [1] 
+           
+### [2] 
+
+### [3] 
+
+### [4] 
 
 ## Detailed steps
 
@@ -49,7 +63,7 @@ A retailer of office supplies wants to get a better understanding of how their b
   - State is a text column. There are 49 distinct states and 1 value only appears once. This is almost all the US states.
   - Postal Code is a 5-letter text column with 631 distinct values
   - Region is a category column with 4 options: "West", "East", "Central" and "South"
-  - Product ID is a key column with 1862 distinct values and 1830 unique values  (1850, 1834)
+  - Product ID is a key column with 1862 distinct values and 1830 unique values
   - Category has 3 options: "Office Supplies", "Furniture" and "Technology"
   - Subcategory has 17 distinct values
   - Product Name is similar to Product ID but records the name instead. It doesn't have the same distribution suggesting data errors
@@ -73,7 +87,7 @@ A retailer of office supplies wants to get a better understanding of how their b
   - Remove duplicates from the new table checking the number is as expected
   - Sort the table if needed
   - Add an index to the new column starting from 1 
-  - Rename and reorder the new index column
+  - Rename the new index column
   - These steps will show on the right hand side of the Query Editor
   - ![new table](https://github.com/user-attachments/assets/0c10b885-8b53-4742-a69e-7a785d33f87d)
   - Back on the sales table, use the merge queries option 
@@ -82,7 +96,7 @@ A retailer of office supplies wants to get a better understanding of how their b
   - Untick the box to "Use original column name as prefix"
   - Remove the columns that are now in a new table
   - Repeat until all tables have been created
-- For the Geography table the expected number of deduped records was 631 because there were 631 unique postal codes. On investigation there was one postal code 92024 that appeared twice for two different cities. A Google search confirmed this wasn't a data error.
+- For the Geography table the expected number of deduped records was 631 because there were 631 unique postal codes. On investigation there was one postal code, 92024, that appeared twice for two different cities. A Google search confirmed this wasn't a data error.
 - For the Product table we noted above the distribution of the Product ID and Product Name columns were different. An example is shown below where the same product ID has two different product names.
   ![duplicate values](https://github.com/user-attachments/assets/af455d68-69c5-4461-9560-7b1f02e3165b)
   - These are data errors likely caused by free text data entry
@@ -98,18 +112,6 @@ A retailer of office supplies wants to get a better understanding of how their b
 ### Step 5: Explore the data
 - Investigate why some sales have negative or 0 profit
 - 
-# Screenshot of Report
 
-![sales dashboard](https://github.com/user-attachments/assets/365a1fbe-3e5c-4a36-89cb-d8e3d5f7a226)
-
-# Insights
-
-### [1] 
-           
-### [2] 
-
-### [3] 
-
-### [4] 
  
         
