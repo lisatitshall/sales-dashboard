@@ -22,7 +22,12 @@ More detail about the steps taken during this project can be found at the bottom
 
 # Insights
 
-### [1] 
+### [1] Business performance has improved year on year
+Sales, profit and orders have generally improved over time except for a dip in sales between 2014 and 2015. In Q4 2017 a number of heavily discounted orders made a loss. This is worth investigation because Q4 is the busiest time of year for this company.
+
+![image](https://github.com/user-attachments/assets/3c7455a3-ac2d-4d4f-9283-7bd9b7dca5e4)
+
+
            
 ### [2] 
 
@@ -108,10 +113,45 @@ More detail about the steps taken during this project can be found at the bottom
 
 
 ### Step 4: Model the data
+- In the Model View, we can see that all the correct relationships between tables exist
+![data model](https://github.com/user-attachments/assets/f0daaa5c-9e7b-476d-85c2-ddd341e5b4e3)
+
+
 
 ### Step 5: Explore the data
-- Investigate why some sales have negative or 0 profit
-- 
+- The following are examples of questions that could help the company understand their current sales and identify potential growth areas:
+  - Are profit / sales / orders increasing year on year? By what percentage?
+  - What is the relationship between profit and sales?
+  - How many days does it take to ship an order that has been placed? Has this been consistent over time? How does it differ by mode?
+  - Are there any trends in when products are sold e.g. a season or day of the week?
+  - Which product types are the most profitable?
+  - Which product types are experiencing the least/most growth year on year?
+  - How does performance compare across the different customer types? Is this changing?
+  - How do sales compare in different regions? How has this changed over time?
+  - How many products are purchased per order?
+ 
+- A lot of these examples rely on analysing trends over time. To do this we introduce a new calendar table using the CALENDARAUTO DAX function.
+- Firstly, let's understand whether profit / sales / orders are improving over time.
+  To do this we introduce measures like the following which sums up sales for the previous year. Note: the ISBLANK is to ensure we don't have an extra line in the matrix for a year            which has no sales.
+  ```
+  Last Year Sales = IF(
+        NOT ISBLANK([Total Sales]),
+        CALCULATE(
+            [Total Sales],
+            DATEADD('Calendar'[Date], -1, YEAR)
+        )
+  )
+  ```
+- The following chart and matrix visualize how the business has performed over time. We note:
+  - Sales have increased year on year except for a small dip between 2014 and 2015
+  - Profit has increased year on year, even in 2015 when sales dipped. The percentage increase was lower in 2018
+  - About 13% of sales end up as profit. This has been fairly stable except in the first trading year where it was 10%
+  - Orders have increased year on year. The percentage increase has also improved each year
+  ![yearly performance](https://github.com/user-attachments/assets/7a196497-0903-4da9-b56f-9f9862d61a4b)
+  - When we drill down on the matrix we see that in Q4 2017 the profit growth is -28% but the sales growth is 19%. When we look at the raw data we see this is due to a number of orders which have a negative profit and a high discount rate.
+  ![losing money](https://github.com/user-attachments/assets/3319d0fc-1d5a-4ba2-a329-56ad643af217)
+
+
 
  
         
