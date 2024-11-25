@@ -18,18 +18,17 @@ A retailer of office supplies wants to get a better understanding of how their b
 
 More detail about the steps taken during this project can be found at the bottom of this document.
 
-# Screenshot of Report
-
 # Insights
 
 ### [1] Business performance has improved year on year
-Sales, profit and orders have generally improved over time except for a dip in sales between 2014 and 2015. In Q4 2017 a number of heavily discounted orders made a loss. This is worth investigation because Q4 is the busiest time of year for this company.
+Sales, profit and orders have generally improved over time except for a dip in sales between 2014 and 2015. In Q4 2017 a number of heavily discounted orders made a loss. This is worth investigation because Q4 is the busiest time of year for this business.
 
 ![image](https://github.com/user-attachments/assets/3c7455a3-ac2d-4d4f-9283-7bd9b7dca5e4)
 
+### [2] Wednesdays are the least popular day to place orders
+Orders received between Friday and Monday make up roughly the same percentage of all orders, 17-18% each day. The midweek days from Tuesday to Thursday are less popular. The column chart shows this hasn't changed much over the years except in 2014 when Tuesday and Wednesday were more popular and Thursday was less popular. Note: the colours of the bars are conditionally formatted to compare the percentage to the percentage over all years. Surprisingly, there was little difference in when corporate and individual consumers placed their orders. We may have expected corporate clients to not place orders over the weekend.
 
-           
-### [2] 
+![popular days](https://github.com/user-attachments/assets/02a60c69-8492-479b-b1aa-dfd1a4085e30)
 
 ### [3] 
 
@@ -150,6 +149,62 @@ Sales, profit and orders have generally improved over time except for a dip in s
   ![yearly performance](https://github.com/user-attachments/assets/7a196497-0903-4da9-b56f-9f9862d61a4b)
   - When we drill down on the matrix we see that in Q4 2017 the profit growth is -28% but the sales growth is 19%. When we look at the raw data we see this is due to a number of orders which have a negative profit and a high discount rate.
   ![losing money](https://github.com/user-attachments/assets/3319d0fc-1d5a-4ba2-a329-56ad643af217)
+- Next, let's understand whether there are popular days of the week where more orders are likely to be placed.
+  To do this we'll introduce the following calculated columns to calculate the weekday an order has been placed on.
+  ```
+  Day Number of Order = WEEKDAY([Order Date], 1)
+  ```
+  ```
+  Day of Order = FORMAT(Sales[Day Number of Order], "dddd")
+  ```
+  The Day Number of Order will return an integer from 1 to 7 depending on the day an order was placed. The Day of Order returns the full name of the day. It will be ordered by the Day     Number of Order because otherwise visuals will order the day name alphabetically.
+
+  Then we introduce these two measures. The first calculates the percentage of orders placed on a given day in a given year. The second calculates the percentage of all orders placed on   a given day regardless of the year. Variables have been used for readability.
+  ```
+  Total Orders Day % of Year = 
+    VAR AllOrders = CALCULATE(
+        [Total Orders],
+        REMOVEFILTERS(Sales[Day Number of Order]),
+        REMOVEFILTERS(Sales[Day of Order])
+    )
+           
+    RETURN DIVIDE([Total Orders], AllOrders)
+  ```
+  ```
+  Total Orders % of All Years = 
+    VAR AllOrders = CALCULATE(
+        [Total Orders],
+        REMOVEFILTERS(Sales)
+    )
+
+    VAR DayOrders = CALCULATE(
+        [Total Orders],
+        REMOVEFILTERS(Sales[Year of Order])
+    )
+
+    RETURN DIVIDE(DayOrders, AllOrders)
+
+  ```
+  To show this visually we'll add this measure and use it for conditional formatting.
+  ```
+  Order % Colour = IF(
+    [Total Orders Day % of Year] < [Total Orders % of All Years], 
+    "#59a472",
+    "#118DFF"
+    
+  )                 
+  ```
+- The following matrix and visual display the results. We note:
+  - Wednesday is the least popular day for orders. Only 4% of orders are placed on a Wednesday.
+  - There hasn't been much change in popular days over time. The exception is in 2014 when a higher proportion of orders were placed on Tuesdays and Wednesdays.
+  - Surprisingly there isn't much difference in which types of customers are placing orders on which day. We might have expected corporate customers to not place orders over the weekend     but that isn't the case.
+![popular days](https://github.com/user-attachments/assets/02a60c69-8492-479b-b1aa-dfd1a4085e30)
+
+  
+
+
+  
+  
 
 
 
