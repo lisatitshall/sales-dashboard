@@ -1,8 +1,6 @@
 
 # Sales Dashboard
 
-### Dashboard Link : 
-
 ## Summary of task
 
 A retailer of office supplies wants to get a better understanding of how their business is performing. They would like a dashboard which allows them to explore their sales by product type, customer and location to identify trends and possible growth areas.
@@ -16,7 +14,7 @@ A retailer of office supplies wants to get a better understanding of how their b
 - Step 5 : Create calculated columns and measures as needed.
 - Step 6 : In the Report view, add visualizations to summarize the company's sales data.
 
-More detail about the steps taken during this project can be found at the bottom of this document.
+For more detail on the actions taken during each step (including the content of DAX formulas) see the [Detailed Steps](#detailed-steps) section.
 
 # Insights
 
