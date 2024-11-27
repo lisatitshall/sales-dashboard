@@ -30,9 +30,10 @@ Orders received between Friday and Monday make up roughly the same percentage of
 
 ![popular days](https://github.com/user-attachments/assets/02a60c69-8492-479b-b1aa-dfd1a4085e30)
 
-### [3] 
+### [3] Furniture products have the lowest profit margin
+When we calculate the overall and average profit margin we see that the furniture category has the lowest overall profit margin. Generally the overall and average profit margins per subcategory are similar but there are notable exceptions, for example, the Supplies subcategory. In the Supplies case we have a positive average profit margin but a negative value overall suggesting a small number of items being sold for a large loss. This was confirmed by looking at the raw data. There is weak negative correlation between the percentage of discounted orders and the average profit margin and no clear trends between category types.
 
-### [4] 
+![all profit margin](https://github.com/user-attachments/assets/63f88c90-f894-49b8-a6e0-8e5f2f7cda56)
 
 ## Detailed steps
 
@@ -199,6 +200,35 @@ Orders received between Friday and Monday make up roughly the same percentage of
   - There hasn't been much change in popular days over time. The exception is in 2014 when a higher proportion of orders were placed on Tuesdays and Wednesdays.
   - Surprisingly there isn't much difference in which types of customers are placing orders on which day. We might have expected corporate customers to not place orders over the weekend     but that isn't the case.
 ![popular days](https://github.com/user-attachments/assets/02a60c69-8492-479b-b1aa-dfd1a4085e30)
+- Finally, let's look at the overall and average profit margins and how these differ across product categories and subcategories. Note: we don't know whether this profit margin is the net or gross value because we only have a profit figure and no information about whether this excludes the operating costs as well as the cost of goods.
+- To calculate the average profit margin we introduce the following measure
+  ```
+  Average Profit Margin = AVERAGEX(
+      Sales,
+      [Profit Margin]
+  )
+  ```
+- Adding this to visualizations we get the following. We note:
+  - For all categories the overall and average profit margins are both 12%
+  - The furniture category has the lowest overall profit margin
+  - The table subcategory has the lowest overall profit margin
+  - Some subcategories have a large discrepancy between the overall and average profit margin e.g. supplies. In the supplies case we have a positive average profit margin but a        negative value overall. This suggests a small number of items being sold for a large loss which is bringing the overall profit margin down (this is confirmed by looking at the raw data)
+![profit margin](https://github.com/user-attachments/assets/a83a3f98-b942-4242-a61f-4814925ecb2b)
+- We noted earlier that some items are being sold at a discount. It would be interesting to see whether the proportion of discounted items is correlated to the profit margin. To investigate we add the following measure.
+```
+  % Discounted Orders = 
+  
+      VAR DiscountedOrders = CALCULATE(
+          [Total Orders], 
+          Sales[Discount] > 0
+      )
+  
+      RETURN DIVIDE(DiscountedOrders, [Total Orders])
+```
+- Adding this to the existing matrix we see that discounts are being applied across all product types. The smallest proportion of discounts are applied to the labels subcategory (35%) and the largest proportion to the chairs and binders subcategories (78%).
+- We would expect the average profit margin to be higher if fewer discounts are applied. When we add this to a scatter chart we see there is negative correlation but it's weak. We might also expect product categories to behave similiarly (e.g. form separate clusters on the chart) but this isn't quite true. Furniture products tend to have a higher proportion of discounted orders and a lower average profit margin but the furnishings subcategory doesn't fit this pattern. Likewise for office supplies, the proportion of discounted orders is hovering around 40% but the average profit margin is varying from -16% to 43%
+- ![scatter chart](https://github.com/user-attachments/assets/bb04e95d-be85-4ade-befb-14abaddcdb9f)
+
 
   
 
