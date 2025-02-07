@@ -6,8 +6,7 @@ library(TTR)
 library(forecast)
 
 #read in data
-all_sales <- read_xlsx("data/sales by month.xlsx", 
-                            sheet = 1 )
+all_sales <- read_xlsx("data/sales by month.xlsx")
 
 glimpse(all_sales)
 
@@ -36,7 +35,8 @@ monthly_sales_time_series <- ts(monthly_sales$sales, frequency = 12,
 #plot time series
 #can see Sept, Nov-Dec are higher each year
 #not quite additive because sales are getting higher in 2017
-plot.ts(monthly_sales_time_series, xlab = "Year", ylab = "Sales")
+plot.ts(monthly_sales_time_series, xlab = "Year", ylab = "Sales", 
+        main = "Total Sales by Month")
 
 #try log transform
 #looks more additive (apart from Feb 2014 exception)
@@ -69,15 +69,50 @@ monthly_sales_time_series_forecasts
 
 #plot to see original vs predictions
 #not bad but looks better earlier on
-plot(monthly_sales_time_series_forecasts, xlab = "Year")
+plot(monthly_sales_time_series_forecasts, xlab = "Year", 
+     main = "Holt Winters sales forecast")
 
 #forecast next year worth of sales
 monthly_sales_time_series_forecasts_future <- 
   forecast(monthly_sales_time_series_forecasts, h = 12)
 
 #plot forecast
-plot(monthly_sales_time_series_forecasts_future)
+plot(monthly_sales_time_series_forecasts_future, xlab = "Year", 
+     ylab = "Sales", main = "Holt Winters sales future forecast")
 abline(a=100000, b = 0, lty = 2)
 abline(a=120000, b = 0, lty = 2)
+
+#test whether the residuals are autocorrelated i.e. correlation between 
+# two sales values at different points in time
+#graphically 1 is above significance bounds
+acf(monthly_sales_time_series_forecasts_future$residuals, 
+    lag.max = 20, na.action = na.pass, main = "Autocorrelation test")
+
+#no autocorrelation
+Box.test(monthly_sales_time_series_forecasts_future$residuals, 
+         lag=20, type="Ljung-Box")
+
+#check whether residuals are constant over time
+plot.ts(monthly_sales_time_series_forecasts_future$residuals, 
+        xlab= "Year", ylab = "Residual", main = "Holt Winters Residuals")           
+
+#looks approx normal but good to test
+hist(monthly_sales_time_series_forecasts_future$residuals,
+     freq = FALSE, breaks = 10, 
+     xlab = "Residuals", main = "Holt Winters Residual Distribution")
+
+
+curve(dnorm(x, 
+            mean = mean(monthly_sales_time_series_forecasts_future$residuals, 
+                        na.rm = TRUE),
+            sd = sd(monthly_sales_time_series_forecasts_future$residuals, 
+                    na.rm = TRUE)),
+      add = TRUE,
+      col = "blue")
+
+#test for normality, ok
+shapiro.test(monthly_sales_time_series_forecasts_future$residuals)
+
+
 
 
