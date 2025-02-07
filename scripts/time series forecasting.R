@@ -57,6 +57,9 @@ monthly_sales_time_series_seasonally_adjusted <-
 plot(monthly_sales_time_series_seasonally_adjusted, xlab = "Year", 
      ylab = "Sales")
 
+
+# Holt Winters ------------------------------------
+
 #use Holt Winters for forecasts 
 #alpha is 0.06 meaning past/recent data used equally
 #beta is 0.05 meaning the trend slope doesn't change much over time
@@ -101,7 +104,6 @@ hist(monthly_sales_time_series_forecasts_future$residuals,
      freq = FALSE, breaks = 10, 
      xlab = "Residuals", main = "Holt Winters Residual Distribution")
 
-
 curve(dnorm(x, 
             mean = mean(monthly_sales_time_series_forecasts_future$residuals, 
                         na.rm = TRUE),
@@ -113,6 +115,72 @@ curve(dnorm(x,
 #test for normality, ok
 shapiro.test(monthly_sales_time_series_forecasts_future$residuals)
 
+# ARIMA model  ----------------------
 
+#does our time series look stationary?
+#no, mean is higher later on
+plot(monthly_sales_time_series)
 
+#try differencing the time series to get a stationary one
+monthly_sales_time_series_difference_1 <-
+  diff(monthly_sales_time_series, differences = 1)
 
+#looks ok - 1 order differencing 
+plot.ts(monthly_sales_time_series_difference_1, xlab = "Year", 
+        ylab = "sales (difference 1)")
+
+#determine p and q by looking at autocorrelations
+# a few points are above the significance levels
+acf(monthly_sales_time_series_difference_1, lag.max=20, 
+    main = "Autocorrelation of 1 difference time series")    
+
+pacf(monthly_sales_time_series_difference_1, lag.max=20, 
+    main = "Partial autocorrelation of 1 difference time series") 
+
+#this suggests ARIMA(0,1,1) as optimal (using AICc as default)
+auto.arima(monthly_sales_time_series)
+
+#fit an arima model
+monthly_sales_time_series_arima <- 
+  arima(monthly_sales_time_series,
+        order= c(0,1,1),
+        seasonal = list(order = c(0,1,1), period = 12))
+monthly_sales_time_series_arima
+
+#plot against actual
+plot(monthly_sales_time_series - monthly_sales_time_series_arima$residuals, 
+     xlab = "Year", ylab = "Observed / Fitted",
+     main = "ARIMA sales forecast",
+     col = "red")
+lines(monthly_sales_time_series,
+      col = "black")
+
+#try forecast
+monthly_sales_time_series_arima_forecasts <- 
+  forecast(monthly_sales_time_series_arima, h = 12 )
+
+#slightly lower forecast overall
+plot(monthly_sales_time_series_arima_forecasts, 
+     xlab = "Year", ylab = "Sales", main = "ARIMA sales future forecast")
+abline(a = 100000, b = 0, lty = 2)
+abline(a = 120000, b = 0, lty = 2)
+
+#check whether residuals are constant over time
+plot.ts(monthly_sales_time_series_arima_forecasts$residuals, 
+        xlab= "Year", ylab = "Residual", main = "ARIMA Residuals")           
+
+#looks approx normal but good to test
+hist(monthly_sales_time_series_arima_forecasts$residuals,
+     freq = FALSE, breaks = 10, 
+     xlab = "Residuals", main = "ARIMA Residual Distribution")
+
+curve(dnorm(x, 
+            mean = mean(monthly_sales_time_series_arima_forecasts$residuals, 
+                        na.rm = TRUE),
+            sd = sd(monthly_sales_time_series_arima_forecasts$residuals, 
+                    na.rm = TRUE)),
+      add = TRUE,
+      col = "blue")
+
+#test for normality, not normal 
+shapiro.test(monthly_sales_time_series_arima_forecasts$residuals)
