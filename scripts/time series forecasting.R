@@ -184,3 +184,9 @@ curve(dnorm(x,
 
 #test for normality, not normal 
 shapiro.test(monthly_sales_time_series_arima_forecasts$residuals)
+
+
+#understand more about how Holt Winters / ARIMA work
+#look at adjusting parameters
+#how to compare the performance of both methods? RMSE...
+#update OneNote on AIC, BIC
