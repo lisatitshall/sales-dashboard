@@ -272,6 +272,8 @@ refit_models <- calibrate_models %>%
 #forecast one year in advance
 #see how much difference assuming a multiplicative relationship
 # makes to exponential - this is like a best case scenario
+# also note that auto arima has been updated to my manual parameters so 
+# green and red lines are the same
 refit_models %>%
   modeltime_forecast(
     actual_data = tibble(monthly_sales_simplified),
