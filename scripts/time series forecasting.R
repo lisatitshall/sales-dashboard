@@ -1,9 +1,12 @@
 #load packages
 library(tidyverse)
+library(tidymodels)
 library(readxl)
 #time series
 library(TTR)
 library(forecast)
+library(timetk)
+library(modeltime)
 
 #read in data
 all_sales <- read_xlsx("data/sales by month.xlsx")
@@ -48,6 +51,7 @@ monthly_sales_time_series_components <-
   decompose(monthly_sales_time_series, type = "multiplicative")
 
 #flat between 2014 and 2015, then steady increase
+#random doesn't look like observed suggesting seasonal is important
 plot(monthly_sales_time_series_components)
 
 #plot the trend without the seasonal element 
@@ -57,6 +61,12 @@ monthly_sales_time_series_seasonally_adjusted <-
 plot(monthly_sales_time_series_seasonally_adjusted, xlab = "Year", 
      ylab = "Sales")
 
+#plot seasonal box plots
+tibble(monthly_sales) %>% plot_seasonal_diagnostics(
+                          .date_var = date,
+                          .value= sales,
+                          .interactive = FALSE
+                           )
 
 # Holt Winters ------------------------------------
 
@@ -64,7 +74,7 @@ plot(monthly_sales_time_series_seasonally_adjusted, xlab = "Year",
 #alpha is 0.06 meaning past/recent data used equally
 #beta is 0.05 meaning the trend slope doesn't change much over time
 #gamma is 0.54 meaning the estimate of seasonal component uses more recent data
-#s9, s11, s12 are highest - Sep/Nov/Dec as we saw, s2(Feb) is lowest
+#s9, s11, s12 are highest - Sep/Nov/Dec as we saw, s2 Feb is lowest
 monthly_sales_time_series_forecasts <- 
   HoltWinters(monthly_sales_time_series, seasonal = "multiplicative")
 
@@ -131,10 +141,10 @@ plot.ts(monthly_sales_time_series_difference_1, xlab = "Year",
 
 #determine p and q by looking at autocorrelations
 # a few points are above the significance levels
-acf(monthly_sales_time_series_difference_1, lag.max=20, 
+acf(monthly_sales_time_series_difference_1, lag.max=24, 
     main = "Autocorrelation of 1 difference time series")    
 
-pacf(monthly_sales_time_series_difference_1, lag.max=20, 
+pacf(monthly_sales_time_series_difference_1, lag.max=24, 
     main = "Partial autocorrelation of 1 difference time series") 
 
 #this suggests ARIMA(0,1,1) as optimal (using AICc as default)
@@ -185,8 +195,94 @@ curve(dnorm(x,
 #test for normality, not normal 
 shapiro.test(monthly_sales_time_series_arima_forecasts$residuals)
 
+# tidymodels approach --------------------------
 
-#understand more about how Holt Winters / ARIMA work
+#remove irrelevant columns
+monthly_sales_simplified <- monthly_sales %>% select(year, date, sales)
+
+#split data
+splits <- initial_time_split(monthly_sales_simplified)
+
+#test and train data
+monthly_sales_simplified_train <- training(splits)
+monthly_sales_simplified_test <- testing(splits)
+
+#try ARIMA and exponential smoothing and compare auto to manual
+arima_fit <- arima_reg() %>% set_engine("auto_arima") %>%
+  fit(sales ~ date , data = monthly_sales_simplified_train)
+  
+arima_fit_manual <- 
+  arima_reg(seasonal_period = 12, 
+            non_seasonal_ar = 0,
+            non_seasonal_differences = 1,
+            non_seasonal_ma = 1,
+            seasonal_ar = 0,
+            seasonal_differences = 1,
+            seasonal_ma = 1) %>%
+  set_engine("arima") %>%
+  fit(sales ~ date , data = monthly_sales_simplified_train)
+  
+exponential_fit <- exp_smoothing() %>% set_engine("ets")  %>%
+  fit(sales ~ date , data = monthly_sales_simplified_train)
+ 
+#note: tried to determine multiplicative/additive from visual
+# but not all combinations are excepted
+exponential_fit_manual <- 
+  exp_smoothing(seasonal_period = 12,
+                error = "multiplicative",
+                trend = "multiplicative",
+                season = "multiplicative"
+                ) %>% 
+  set_engine("ets")  %>%
+  fit(sales ~ date , data = monthly_sales_simplified_train)
+
+#add all models to a table
+all_models <- modeltime_table(
+  arima_fit,
+  arima_fit_manual,
+  exponential_fit,
+  exponential_fit_manual
+)
+
+#calibrate models
+calibrate_models <- all_models %>% 
+  modeltime_calibrate(new_data = monthly_sales_simplified_test)
+
+#plot forecasts together
+calibrate_models %>% 
+  modeltime_forecast(
+    actual_data = tibble(monthly_sales_simplified),
+    new_data = tibble(monthly_sales_simplified_test)
+  ) %>% 
+  plot_modeltime_forecast(
+    .conf_interval_show = FALSE,
+    .y_lab = "Sales"
+  )
+
+
+#compare models using metrics
+#manual exponential is performing the best
+calibrate_models %>% 
+  modeltime_accuracy()
+
+#refit models for predictions
+refit_models <- calibrate_models %>% 
+  modeltime_refit(data = monthly_sales_simplified)
+
+#forecast one year in advance
+#see how much difference assuming a multiplicative relationship
+# makes to exponential - this is like a best case scenario
+refit_models %>%
+  modeltime_forecast(
+    actual_data = tibble(monthly_sales_simplified),
+    h = "1 year"
+  ) %>% 
+  plot_modeltime_forecast(
+    .conf_interval_show = FALSE,
+    .y_lab = "Sales", 
+    .title = "Future Forecast Plot (1 year)"
+  )
+
+#understand more about how exponential smoothing / ARIMA work
 #look at adjusting parameters
-#how to compare the performance of both methods? RMSE...
 #update OneNote on AIC, BIC
