@@ -70,9 +70,10 @@ tibble(monthly_sales) %>% plot_seasonal_diagnostics(
 
 # Holt Winters ------------------------------------
 
-#use Holt Winters for forecasts 
-#alpha is 0.06 meaning past/recent data used equally
-#beta is 0.05 meaning the trend slope doesn't change much over time
+#use Holt Winters for forecasts because there's a trend and seasonality
+#the seasonal elements are increasing over time so use multiplicative
+#alpha is 0.06 meaning past/recent data used equally for random
+#beta is 0.05 meaning past/recent data used equally for trend
 #gamma is 0.54 meaning the estimate of seasonal component uses more recent data
 #s9, s11, s12 are highest - Sep/Nov/Dec as we saw, s2 Feb is lowest
 monthly_sales_time_series_forecasts <- 
@@ -236,12 +237,24 @@ exponential_fit_manual <-
   set_engine("ets")  %>%
   fit(sales ~ date , data = monthly_sales_simplified_train)
 
+#exponential fit with damping
+exponential_fit_manual_damped <- 
+  exp_smoothing(seasonal_period = 12,
+                error = "multiplicative",
+                trend = "multiplicative",
+                season = "multiplicative", 
+                damping = "damped"
+  ) %>% 
+  set_engine("ets")  %>%
+  fit(sales ~ date , data = monthly_sales_simplified_train)
+
 #add all models to a table
 all_models <- modeltime_table(
   arima_fit,
   arima_fit_manual,
   exponential_fit,
-  exponential_fit_manual
+  exponential_fit_manual,
+  exponential_fit_manual_damped
 )
 
 #calibrate models
@@ -249,6 +262,10 @@ calibrate_models <- all_models %>%
   modeltime_calibrate(new_data = monthly_sales_simplified_test)
 
 #plot forecasts together
+#auto exponential is saying additive error/seasonality and no trend
+# gamma is really low so past/recent data all used for seasonality
+# damping not used
+#multiplicative exponential predicts higher
 calibrate_models %>% 
   modeltime_forecast(
     actual_data = tibble(monthly_sales_simplified),
@@ -261,7 +278,7 @@ calibrate_models %>%
 
 
 #compare models using metrics
-#manual exponential is performing the best
+#manual exponential is performing the best, damping makes it worse
 calibrate_models %>% 
   modeltime_accuracy()
 
@@ -272,6 +289,7 @@ refit_models <- calibrate_models %>%
 #forecast one year in advance
 #see how much difference assuming a multiplicative relationship
 # makes to exponential - this is like a best case scenario
+# damping is somewhere between additive / multiplicative
 # also note that auto arima has been updated to my manual parameters so 
 # green and red lines are the same
 refit_models %>%
