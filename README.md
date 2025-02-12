@@ -13,6 +13,7 @@ A retailer of office supplies wants to get a better understanding of how their b
 - Step 4 : In the Model view, set up appropriate relationships between tables.
 - Step 5 : Create calculated columns and measures as needed.
 - Step 6 : In the Report view, add visualizations to summarize the company's sales data.
+- Step 7 : Try exponential smoothing and ARIMA to predict sales
 
 For more detail on the actions taken during each step (including the content of DAX formulas) see the [Detailed Steps](#detailed-steps) section.
 
@@ -32,6 +33,20 @@ Orders received between Friday and Monday make up roughly the same percentage of
 When we calculate the overall and average profit margin we see that the furniture category has the lowest overall profit margin. Generally the overall and average profit margins per subcategory are similar but there are notable exceptions, for example, the Supplies subcategory. In the Supplies case we have a positive average profit margin but a negative value overall suggesting a small number of items being sold for a large loss. This was confirmed by looking at the raw data. There is weak negative correlation between the percentage of discounted orders and the average profit margin and no clear trends between category types.
 
 ![all profit margin](https://github.com/user-attachments/assets/63f88c90-f894-49b8-a6e0-8e5f2f7cda56)
+
+### [4] Predicted sales for December 2018 are between 110k and 150k
+We split the sales data into train and test and tried different exponential smoothing and ARIMA models to predict sales. The model that performed best was an exponential model with multiplicative trend and seasonality (see metrics below). The graph below shows the different models against the actual data in dark blue.
+
+![image](https://github.com/user-attachments/assets/232527e8-15bd-4512-8e4e-62557c563f8c)
+
+![multple forecasts zoom](https://github.com/user-attachments/assets/f3f4e18c-1c68-44cf-bd97-6f7dcbf5109a)
+
+The following two graphs show the forecasted sales values using each model. There isn't much difference in the predictions except for ETS(M,M,M) which predicts much higher sales. In this case because the upward sales trend is relatively slow it's probably more realistic to use the damped exponential model for accurate predictions. This predicts roughly £110k sales in December 2018 (up from 84k in December 2017)
+
+![multiple forecasts future](https://github.com/user-attachments/assets/30b66b7f-3b7d-49a6-a073-37585fdb7ddf)
+
+![multiple forecasts future zoom](https://github.com/user-attachments/assets/85aff59a-de69-4c04-ae2e-b6d06a906bfe)
+
 
 ## Detailed steps
 
