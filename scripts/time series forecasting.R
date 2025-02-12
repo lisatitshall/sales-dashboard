@@ -72,8 +72,8 @@ tibble(monthly_sales) %>% plot_seasonal_diagnostics(
 
 #use Holt Winters for forecasts because there's a trend and seasonality
 #the seasonal elements are increasing over time so use multiplicative
-#alpha is 0.06 meaning past/recent data used equally for random
-#beta is 0.05 meaning past/recent data used equally for trend
+#alpha is 0.06 meaning errors don't change much over time
+#beta is 0.05 meaning trend doesn't change much over time
 #gamma is 0.54 meaning the estimate of seasonal component uses more recent data
 #s9, s11, s12 are highest - Sep/Nov/Dec as we saw, s2 Feb is lowest
 monthly_sales_time_series_forecasts <- 
@@ -129,33 +129,44 @@ shapiro.test(monthly_sales_time_series_forecasts_future$residuals)
 # ARIMA model  ----------------------
 
 #does our time series look stationary?
-#no, mean is higher later on
+#no, definite trend and seasonality
 plot(monthly_sales_time_series)
 
-#try differencing the time series to get a stationary one
+#try removing seasonality first
 monthly_sales_time_series_difference_1 <-
-  diff(monthly_sales_time_series, differences = 1)
+  diff(monthly_sales_time_series, lag = 12)
 
-#looks ok - 1 order differencing 
+#trend still there
 plot.ts(monthly_sales_time_series_difference_1, xlab = "Year", 
         ylab = "sales (difference 1)")
 
-#determine p and q by looking at autocorrelations
-# a few points are above the significance levels
-acf(monthly_sales_time_series_difference_1, lag.max=24, 
-    main = "Autocorrelation of 1 difference time series")    
+#try differencing again
+monthly_sales_time_series_difference_2 <-
+  diff(monthly_sales_time_series_difference_1)
 
-pacf(monthly_sales_time_series_difference_1, lag.max=24, 
-    main = "Partial autocorrelation of 1 difference time series") 
+#ok
+plot.ts(monthly_sales_time_series_difference_2, xlab = "Year", 
+        ylab = "sales (difference 2)")
+
+#determine p and q by looking at autocorrelations
+# a few points are above the significance levels, choose p=1, 
+acf(monthly_sales_time_series_difference_2, lag.max=24, 
+    main = "Autocorrelation of 2 difference time series")    
+
+#q = 1
+pacf(monthly_sales_time_series_difference_2, lag.max=24, 
+    main = "Partial autocorrelation of 2 difference time series") 
 
 #this suggests ARIMA(0,1,1) as optimal (using AICc as default)
+#note: best to compare this against your manual choics 
 auto.arima(monthly_sales_time_series)
 
 #fit an arima model
 monthly_sales_time_series_arima <- 
   arima(monthly_sales_time_series,
         order= c(0,1,1),
-        seasonal = list(order = c(0,1,1), period = 12))
+        seasonal = list(order = c(0,1,1), period = 12)
+        )
 monthly_sales_time_series_arima
 
 #plot against actual
@@ -166,9 +177,42 @@ plot(monthly_sales_time_series - monthly_sales_time_series_arima$residuals,
 lines(monthly_sales_time_series,
       col = "black")
 
+#try manual arima
+monthly_sales_time_series_arima_manual <- 
+  arima(monthly_sales_time_series,
+        order= c(1,1,1),
+        seasonal = list(order = c(1,1,1), period = 12)
+  )
+monthly_sales_time_series_arima_manual
+
+#plot manual arima against actual
+plot(monthly_sales_time_series - monthly_sales_time_series_arima$residuals, 
+     xlab = "Year", ylab = "Observed / Fitted",
+     main = "ARIMA sales forecast (inc. manual)",
+     col = "red")
+lines(monthly_sales_time_series - 
+        monthly_sales_time_series_arima_manual$residuals,
+      col = "blue")
+lines(monthly_sales_time_series,
+      col = "black")
+
+#compare rmse
+monthly_sales$arima_preds <- as.numeric(monthly_sales$sales - 
+                                          monthly_sales_time_series_arima$residuals)
+
+monthly_sales$arima_manual_preds <- 
+  as.numeric(monthly_sales$sales - 
+                monthly_sales_time_series_arima_manual$residuals)
+
+#manual looks slightly better
+rmse(data = ungroup(monthly_sales), truth = sales, estimate = arima_preds)
+rmse(data = ungroup(monthly_sales), truth = sales, estimate = arima_manual_preds)
+mae(data = ungroup(monthly_sales), truth = sales, estimate = arima_preds)
+mae(data = ungroup(monthly_sales), truth = sales, estimate = arima_manual_preds)
+
 #try forecast
 monthly_sales_time_series_arima_forecasts <- 
-  forecast(monthly_sales_time_series_arima, h = 12 )
+  forecast(monthly_sales_time_series_arima_manual, h = 12 )
 
 #slightly lower forecast overall
 plot(monthly_sales_time_series_arima_forecasts, 
@@ -214,10 +258,10 @@ arima_fit <- arima_reg() %>% set_engine("auto_arima") %>%
   
 arima_fit_manual <- 
   arima_reg(seasonal_period = 12, 
-            non_seasonal_ar = 0,
+            non_seasonal_ar = 1,
             non_seasonal_differences = 1,
             non_seasonal_ma = 1,
-            seasonal_ar = 0,
+            seasonal_ar = 1,
             seasonal_differences = 1,
             seasonal_ma = 1) %>%
   set_engine("arima") %>%
@@ -290,8 +334,7 @@ refit_models <- calibrate_models %>%
 #see how much difference assuming a multiplicative relationship
 # makes to exponential - this is like a best case scenario
 # damping is somewhere between additive / multiplicative
-# also note that auto arima has been updated to my manual parameters so 
-# green and red lines are the same
+# also note that auto arima has been updated 
 refit_models %>%
   modeltime_forecast(
     actual_data = tibble(monthly_sales_simplified),
@@ -303,6 +346,3 @@ refit_models %>%
     .title = "Future Forecast Plot (1 year)"
   )
 
-#understand more about how exponential smoothing / ARIMA work
-#look at adjusting parameters
-#update OneNote on AIC, BIC
