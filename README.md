@@ -8,12 +8,12 @@ A retailer of office supplies wants to get a better understanding of how their b
 ### Steps followed 
 
 - Step 1 : Load data from a csv file into Power BI Desktop.
-- Step 2 : Use the Power Query Editor to profile the data, understand what each column shows and identify any anomalies.
+- Step 2 : Use the Power Query Editor to profile the data and identify any anomalies.
 - Step 3 : Transform the data using Power Query Editor.
 - Step 4 : In the Model view, set up appropriate relationships between tables.
 - Step 5 : Create calculated columns and measures as needed.
 - Step 6 : In the Report view, add visualizations to summarize the company's sales data.
-- Step 7 : Try exponential smoothing and ARIMA to predict sales
+- Step 7 : Try exponential smoothing and ARIMA to predict sales.
 
 For more detail on the actions taken during each step (including the content of DAX formulas) see the [Detailed Steps](#detailed-steps) section.
 
@@ -25,7 +25,7 @@ Sales, profit and orders have generally improved over time except for a dip in s
 ![image](https://github.com/user-attachments/assets/3c7455a3-ac2d-4d4f-9283-7bd9b7dca5e4)
 
 ### [2] Wednesdays are the least popular day to place orders
-Orders received between Friday and Monday make up roughly the same percentage of all orders, 17-18% each day. The midweek days from Tuesday to Thursday are less popular. The column chart shows this hasn't changed much over the years except in 2014 when Tuesday and Wednesday were more popular and Thursday was less popular. Note: the colours of the bars are conditionally formatted to compare the percentage to the percentage over all years. Surprisingly, there was little difference in when corporate and individual consumers placed their orders. We may have expected corporate clients to not place orders over the weekend.
+Orders received between Friday and Monday make up roughly the same percentage of all orders, 17-18% each day. The midweek days from Tuesday to Thursday are less popular. The column chart shows this hasn't changed much over the years. Note: the colours of the bars are conditionally formatted to compare the percentage to the percentage over all years. Surprisingly, there was little difference in when corporate and individual consumers placed their orders. We may have expected corporate clients to not place orders over the weekend.
 
 ![popular days](https://github.com/user-attachments/assets/02a60c69-8492-479b-b1aa-dfd1a4085e30)
 
@@ -35,7 +35,7 @@ When we calculate the overall and average profit margin we see that the furnitur
 ![all profit margin](https://github.com/user-attachments/assets/63f88c90-f894-49b8-a6e0-8e5f2f7cda56)
 
 ### [4] Predicted sales for December 2018 are between 110k and 150k
-We split the sales data into train and test and tried different exponential smoothing and ARIMA models to predict sales. The model that performed best was an exponential model with multiplicative trend and seasonality (see metrics below). The graph below shows the different models against the actual data in dark blue.
+When we tried different exponential smoothing and ARIMA models to predict sales, the model that performed best was an exponential model with multiplicative trend and seasonality (see metrics below). The graph below shows the different models against the actual data in dark blue.
 
 ![image](https://github.com/user-attachments/assets/232527e8-15bd-4512-8e4e-62557c563f8c)
 
